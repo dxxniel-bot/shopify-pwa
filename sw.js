@@ -9,7 +9,7 @@ self.addEventListener('push', function (event) {
   let data = {};
   try { data = event.data.json(); } catch (_) { data = { body: event.data.text() }; }
 
-  const title   = data.title || 'Shopify';
+  const title   = data.title || '';
   const options = {
     body:  data.body  || '',
     icon:  'https://files.catbox.moe/ckc4at.png',
