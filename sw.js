@@ -12,7 +12,7 @@ self.addEventListener('push', function (event) {
   const title   = data.title || '';
   const options = {
     body:     data.body  || '',
-    subtitle: '​',
+    subtitle: data.subtitle !== undefined ? data.subtitle : undefined,
     icon:     'https://files.catbox.moe/ckc4at.png',
     badge:    'https://files.catbox.moe/ckc4at.png',
     data:     { url: data.url || null },
