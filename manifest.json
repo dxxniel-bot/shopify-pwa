@@ -1,0 +1,25 @@
+{
+  "name": "Shopify",
+  "short_name": "Shopify",
+  "description": "Shopify order notifications",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#96bf48",
+  "start_url": "./",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "https://files.catbox.moe/ckc4at.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://files.catbox.moe/ckc4at.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

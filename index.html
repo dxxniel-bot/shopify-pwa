@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Shopify">
+  <link rel="apple-touch-icon" href="https://files.catbox.moe/ckc4at.png">
+  <link rel="manifest" href="manifest.json">
+  <title>Shopify</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f6f6f7;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 36px 24px 28px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+    }
+    .logo { width: 72px; height: 72px; border-radius: 14px; margin-bottom: 14px; }
+    h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+    .subtitle { color: #777; font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+    .btn {
+      display: block; width: 100%;
+      padding: 15px 24px;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.75; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+    .btn-primary  { background: #96bf48; color: white; }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+    #status {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+      min-height: 20px;
+    }
+    #status.ok  { color: #2e7d32; font-weight: 600; }
+    #status.err { color: #c62828; }
+    .sub-box { display: none; margin-top: 20px; text-align: left; }
+    .sub-box label {
+      font-size: 12px; color: #888;
+      display: block; margin-bottom: 6px;
+    }
+    .sub-box pre {
+      background: #f6f6f7;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 10px;
+      overflow: auto;
+      max-height: 180px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      color: #333;
+    }
+    .divider { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+    .steps {
+      text-align: left;
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+    .steps strong { color: #222; }
+    .steps .step-num {
+      display: inline-block;
+      width: 20px; height: 20px;
+      background: #96bf48; color: white;
+      border-radius: 50%;
+      text-align: center; line-height: 20px;
+      font-size: 11px; font-weight: 700;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <img class="logo" src="https://files.catbox.moe/ckc4at.png" alt="Shopify">
+  <h1>Shopify</h1>
+  <p class="subtitle" id="subtitle">Activa notificaciones para recibir alertas de pedidos.</p>
+
+  <button class="btn btn-primary" id="btnSub" onclick="subscribe()">Activar notificaciones</button>
+  <div id="status"></div>
+
+  <div class="sub-box" id="subBox">
+    <label>Copia este JSON y guárdalo en tu PC como <strong>subscription.json</strong>:</label>
+    <pre id="subText"></pre>
+    <button class="btn btn-secondary" style="margin-top:10px" onclick="shareJSON()">
+      📤 Compartir / Copiar
+    </button>
+  </div>
+
+  <hr class="divider" id="divSteps">
+  <div class="steps" id="stepsBox">
+    <div><span class="step-num">1</span> <strong>Compartir</strong> (□↑) → <strong>Añadir a inicio</strong></div>
+    <div><span class="step-num">2</span> Abre desde el ícono de la pantalla de inicio</div>
+    <div><span class="step-num">3</span> Pulsa <strong>Activar notificaciones</strong></div>
+    <div><span class="step-num">4</span> Comparte el JSON resultante a tu PC</div>
+  </div>
+</div>
+
+<script>
+const VAPID_PUBLIC_KEY = 'BGpSernwv2JO1RPTm5-KsTncy5XazbFetfmA1lTA2tJ1JYPiRDVyTj8hbH7pl6qeX6EGS-RnSTqigbclCbi9yuc';
+
+function urlB64ToUint8Array(b64) {
+  const padding = '='.repeat((4 - b64.length % 4) % 4);
+  const base64  = (b64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+}
+
+const isStandalone = window.navigator.standalone === true;
+
+if (!isStandalone) {
+  document.getElementById('subtitle').textContent =
+    '⚠️ Primero añade esta página a tu pantalla de inicio (ver pasos abajo), luego ábrela desde el ícono.';
+  document.getElementById('btnSub').disabled = true;
+} else {
+  document.getElementById('divSteps').style.display = 'none';
+  document.getElementById('stepsBox').style.display = 'none';
+}
+
+async function subscribe() {
+  const statusEl = document.getElementById('status');
+  const btn      = document.getElementById('btnSub');
+  btn.disabled   = true;
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    statusEl.className   = 'err';
+    statusEl.textContent = '❌ Web Push no disponible. Abre esta página desde el ícono de inicio (no desde Safari directo).';
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    statusEl.textContent = 'Registrando…';
+    const reg = await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+
+    statusEl.textContent = 'Esperando permiso…';
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      statusEl.className   = 'err';
+      statusEl.textContent = '❌ Permiso denegado. Ve a Ajustes → Notificaciones y activa esta app.';
+      btn.disabled = false;
+      return;
+    }
+
+    statusEl.textContent = 'Suscribiendo…';
+    const sub    = await reg.pushManager.subscribe({
+      userVisibleOnly:      true,
+      applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    const subJSON = JSON.stringify(sub.toJSON(), null, 2);
+
+    document.getElementById('subText').textContent = subJSON;
+    document.getElementById('subBox').style.display = 'block';
+    statusEl.className   = 'ok';
+    statusEl.textContent = '✅ Suscrito. Ahora comparte el JSON a tu PC.';
+    btn.textContent      = '✅ Activado';
+  } catch (err) {
+    statusEl.className   = 'err';
+    statusEl.textContent = '❌ ' + err.message;
+    btn.disabled = false;
+  }
+}
+
+async function shareJSON() {
+  const text = document.getElementById('subText').textContent;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'subscription.json', text }); return; } catch (_) {}
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Copiado al portapapeles');
+  } catch (_) {
+    alert('Selecciona y copia el texto manualmente.');
+  }
+}
+</script>
+</body>
+</html>
