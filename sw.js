@@ -11,10 +11,11 @@ self.addEventListener('push', function (event) {
 
   const title   = data.title || '';
   const options = {
-    body:  data.body  || '',
-    icon:  'https://files.catbox.moe/ckc4at.png',
-    badge: 'https://files.catbox.moe/ckc4at.png',
-    data:  { url: data.url || null },
+    body:     data.body  || '',
+    subtitle: '​',
+    icon:     'https://files.catbox.moe/ckc4at.png',
+    badge:    'https://files.catbox.moe/ckc4at.png',
+    data:     { url: data.url || null },
     requireInteraction: false,
   };
 
